@@ -19,9 +19,12 @@ command :build do |c|
 
   c.action do |args, options|
     validate_xcode_version!
+    puts "1"
 
     @workspace = options.workspace
     @project = options.project unless @workspace
+
+    puts "2"
 
     @xcodebuild_info = Shenzhen::XcodeBuild.info(:workspace => @workspace, :project => @project)
 
@@ -32,6 +35,8 @@ command :build do |c|
     @destination = options.destination || Dir.pwd
     FileUtils.mkdir_p(@destination) unless File.directory?(@destination)
 
+    puts "3"
+
     determine_workspace_or_project! unless @workspace || @project
 
     if @project
@@ -39,10 +44,14 @@ command :build do |c|
       say_error "Configuration #{@configuration} not found" and abort unless (@xcodebuild_info.build_configurations.include?(@configuration) rescue false)
     end
 
+    puts "4"
+
     determine_scheme! unless @scheme
     say_error "Scheme #{@scheme} not found" and abort unless (@xcodebuild_info.schemes.include?(@scheme) rescue false)
 
     @configuration = options.configuration
+
+    puts "5"
 
     flags = []
     flags << %{-sdk #{@sdk}}
@@ -51,6 +60,8 @@ command :build do |c|
     flags << %{-scheme "#{@scheme}"} if @scheme
     flags << %{-configuration "#{@configuration}"} if @configuration
     flags << %{-xcconfig "#{@xcconfig}"} if @xcconfig
+
+    puts "6"
 
     @target, @xcodebuild_settings = Shenzhen::XcodeBuild.settings(*flags).detect{|target, settings| settings['WRAPPER_EXTENSION'] == "app"}
     say_error "App settings could not be found." and abort unless @xcodebuild_settings
@@ -62,6 +73,8 @@ command :build do |c|
 
     say_warning "Building \"#{@workspace || @project}\" with Scheme \"#{@scheme}\" and Configuration \"#{@configuration}\"\n" if $verbose
 
+    puts "7"
+
     log "xcodebuild", (@workspace || @project)
 
     actions = []
@@ -69,11 +82,15 @@ command :build do |c|
     actions << :build
     actions << :archive unless options.archive == false
 
+    puts "8"
+
     ENV['CC'] = nil # Fix for RVM
     abort unless system %{xcodebuild #{flags.join(' ')} #{actions.join(' ')} #{'1> /dev/null' unless $verbose}}
 
     @target, @xcodebuild_settings = Shenzhen::XcodeBuild.settings(*flags).detect{|target, settings| settings['WRAPPER_EXTENSION'] == "app"}
     say_error "App settings could not be found." and abort unless @xcodebuild_settings
+
+    puts "8"
 
     @app_path = File.join(@xcodebuild_settings['BUILT_PRODUCTS_DIR'], @xcodebuild_settings['WRAPPER_NAME'])
     @dsym_path = @app_path + ".dSYM"
@@ -81,11 +98,15 @@ command :build do |c|
     @ipa_name = @xcodebuild_settings['WRAPPER_NAME'].gsub(@xcodebuild_settings['WRAPPER_SUFFIX'], "") + ".ipa"
     @ipa_path = File.expand_path(@ipa_name, @destination)
 
+    puts "10"
+
     log "xcrun", "PackageApplication"
     abort unless system %{xcrun -sdk #{@sdk} PackageApplication -v "#{@app_path}" -o "#{@ipa_path}" --embed "#{options.embed || @dsym_path}" #{"-s \"#{options.identity}\"" if options.identity} #{'1> /dev/null' unless $verbose}}
 
     log "zip", @dsym_filename
     abort unless system %{cp -r "#{@dsym_path}" "#{@destination}" && zip -r "#{@dsym_filename}.zip" "#{@dsym_filename}" #{'> /dev/null' unless $verbose} && rm -rf "#{@dsym_filename}"}
+
+    puts "11"
 
     say_ok "#{@ipa_path} successfully built"
   end
