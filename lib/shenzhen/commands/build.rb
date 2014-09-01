@@ -64,14 +64,22 @@ command :build do |c|
     puts "6"
 
     @target, @xcodebuild_settings = Shenzhen::XcodeBuild.settings(*flags).detect{|target, settings| settings['WRAPPER_EXTENSION'] == "app"}
+
+    puts "6.1"
     say_error "App settings could not be found." and abort unless @xcodebuild_settings
+    puts "6.2"
 
     if !@configuration
       @configuration = @xcodebuild_settings['CONFIGURATION']
+    puts "6.3"
       flags << "-configuration '#{@configuration}'"
+
+    puts "6.4"
     end
 
     say_warning "Building \"#{@workspace || @project}\" with Scheme \"#{@scheme}\" and Configuration \"#{@configuration}\"\n" if $verbose
+
+    puts "6.5"
 
     puts "7"
 
