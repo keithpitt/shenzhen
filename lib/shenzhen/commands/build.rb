@@ -60,6 +60,10 @@ command :build do |c|
     flags << %{-scheme "#{@scheme}"} if @scheme
     flags << %{-configuration "#{@configuration}"} if @configuration
     flags << %{-xcconfig "#{@xcconfig}"} if @xcconfig
+    
+    puts "5.1"
+    p flags
+    p @configuration
 
     puts "6"
 
