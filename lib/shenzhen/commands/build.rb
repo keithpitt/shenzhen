@@ -68,6 +68,13 @@ command :build do |c|
     puts "6.1"
     say_error "App settings could not be found." and abort unless @xcodebuild_settings
     puts "6.2"
+    
+    p @configuration
+    puts "6.2.1"
+    p @xcodebuild_settings
+    puts "6.2.2"
+    p @xcodebuild_settings['CONFIGURATION']
+    puts "6.2.3"
 
     if !@configuration
       @configuration = @xcodebuild_settings['CONFIGURATION']
